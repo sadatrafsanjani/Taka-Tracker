@@ -1,18 +1,19 @@
 import {Component, OnInit} from '@angular/core';
 import {CurrencyService} from "../service/currency.service";
 import {HttpClientModule} from "@angular/common/http";
+import {NgForOf} from "@angular/common";
 
 
 @Component({
   selector: 'app-index',
   standalone: true,
-  imports: [HttpClientModule],
+  imports: [HttpClientModule, NgForOf],
   templateUrl: './index.component.html',
   styleUrl: './index.component.css'
 })
 export class IndexComponent implements OnInit {
 
-  data: string = '';
+  rates: any = [];
 
   constructor(readonly currencyService: CurrencyService) {
   }
@@ -20,10 +21,8 @@ export class IndexComponent implements OnInit {
   ngOnInit(): void {
 
     this.currencyService.getExchangeRate().subscribe((response: any) => {
-
-      this.data = response.toString().replace(/\s+/g, '').trim();
-      console.log(this.extractData(this.data));
-
+      const data = response.toString().replace(/\s+/g, '').trim();
+      this.rates = this.extractData(data);
     });
   }
 
@@ -55,7 +54,14 @@ export class IndexComponent implements OnInit {
       data.push(array[i-1]);
 
       if(i%3 == 0){
-        allData.push(data);
+
+        const t = {
+          currency: data[0],
+          buy: data[1],
+          sell: data[2]
+        };
+
+        allData.push(t);
         data = [];
       }
     }
