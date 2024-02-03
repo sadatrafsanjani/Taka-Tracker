@@ -1,14 +1,4 @@
 html {
-  width: 380px;
-  height: 240px;
-}
-
-.text-color-heading {
-  color: #36ba01;
-  font-family: Verdana, serif;
-}
-
-.text-color {
-  color: #00FF2B;
-  font-family: Consolas, serif;
+  width: 500px;
+  height: 600px;
 }

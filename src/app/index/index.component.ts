@@ -1,71 +1,17 @@
-import {Component, OnInit} from '@angular/core';
-import {CurrencyService} from "../service/currency.service";
-import {HttpClientModule} from "@angular/common/http";
-import {NgForOf} from "@angular/common";
+import {Component} from '@angular/core';
+import {NavComponent} from "../template/nav/nav.component";
+import {FooterComponent} from "../template/footer/footer.component";
+import {RateComponent} from "../template/rate/rate.component";
 
 
 @Component({
   selector: 'app-index',
   standalone: true,
-  imports: [HttpClientModule, NgForOf],
+  imports: [NavComponent, FooterComponent, RateComponent],
   templateUrl: './index.component.html',
   styleUrl: './index.component.css'
 })
-export class IndexComponent implements OnInit {
+export class IndexComponent {
 
-  rates: any = [];
 
-  constructor(readonly currencyService: CurrencyService) {
-  }
-
-  ngOnInit(): void {
-
-    this.currencyService.getExchangeRate().subscribe((response: any) => {
-      const data = response.toString().replace(/\s+/g, '').trim();
-      this.rates = this.extractData(data);
-    });
-  }
-
-  extractData(table: string){
-
-    let array: any = [];
-    let data: any = [];
-    let allData: any = [];
-
-    let m: number | RegExpExecArray | null;
-    const regex = /<td>(.*?)<\/td>/gm;
-
-    while ((m = regex.exec(table)) !== null) {
-
-      if (m.index === regex.lastIndex) {
-        regex.lastIndex++;
-      }
-
-      m.forEach((match, index) => {
-
-        if(index%2){
-          array.push(match);
-        }
-      })
-    }
-
-    for(let i=1; i<=array.length; i++){
-
-      data.push(array[i-1]);
-
-      if(i%3 == 0){
-
-        const t = {
-          currency: data[0],
-          buy: data[1],
-          sell: data[2]
-        };
-
-        allData.push(t);
-        data = [];
-      }
-    }
-
-    return allData;
-  }
 }

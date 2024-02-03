@@ -1,28 +1,5 @@
-
 <div class="container bg-dark">
-
-  <div class="row">
-    <header class="text-center mt-2">
-      <h4 class="text-primary h4">Today's Exchange Rate</h4>
-    </header>
-    <div class="com-md-8">
-      <table class="table table-sm table-dark table-bordered border-primary mt-3">
-        <thead>
-          <tr class="text-center">
-            <th class="text-color-heading">CURRENCY</th>
-            <th class="text-color-heading">BUY</th>
-            <th class="text-color-heading">SELL</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let rate of rates; index as i">
-            <td class="text-color">{{rate.currency}}</td>
-            <td class="text-color">{{rate.buy}}</td>
-            <td class="text-color">{{rate.sell}}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
+  <app-nav></app-nav>
+  <app-rate></app-rate>
+  <app-footer></app-footer>
 </div>
