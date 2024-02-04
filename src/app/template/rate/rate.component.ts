@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {NgForOf, NgIf} from "@angular/common";
 import {HttpClientModule} from "@angular/common/http";
 import {CurrencyService} from "../../service/currency.service";
+import {TimeService} from "../../service/time.service";
 
 
 @Component({
@@ -18,14 +19,19 @@ export class RateComponent implements OnInit {
 
   rates: any = [];
 
-  constructor(private currencyService: CurrencyService) {
+  constructor(private currencyService: CurrencyService,
+              private timeService: TimeService) {
   }
 
   ngOnInit(): void {
 
-
     this.currencyService.getExchangeRate().subscribe((response: any) => {
       if(response != null){
+
+        const date = new Date();
+        const updatedAt = date.getHours() + ":" + date.getMinutes();
+        this.timeService.setTime(updatedAt);
+
         const data = response.toString().replace(/\s+/g, '').trim();
         this.extractData(data);
       }

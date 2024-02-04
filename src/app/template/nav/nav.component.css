@@ -9,6 +9,18 @@
   font-family: Bahnschrift, sans-serif;
 }
 
+.modal-text {
+  color: #f0f0f0;
+  font-size: 11px;
+  font-family: Bahnschrift, sans-serif;
+}
+
+.modal-text-normal {
+  color: #f0f0f0;
+  font-size: 12px;
+  font-family: Bahnschrift, sans-serif;
+}
+
 .graph-btn {
   background: transparent url("../../../assets/graph.png") no-repeat;
   background-size: 20px;

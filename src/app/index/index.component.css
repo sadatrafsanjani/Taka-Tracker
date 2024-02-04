@@ -1,5 +1,10 @@
 #wrapper {
   margin: auto;
-  width: 350px;
+  width: 330px;
   height: 546px;
+  background-color: #1a1a1a;
+}
+
+body{
+  background-color: #1a1a1a;
 }
