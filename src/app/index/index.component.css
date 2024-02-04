@@ -1,4 +1,5 @@
-html {
-  width: 500px;
-  height: 600px;
+#wrapper {
+  margin: auto;
+  width: 350px;
+  height: 546px;
 }
