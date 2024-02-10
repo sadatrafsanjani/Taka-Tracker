@@ -25,7 +25,15 @@ export class RateComponent implements OnInit {
 
   ngOnInit(): void {
 
+    this.getData();
+  }
+
+  public getData(){
+
     this.currencyService.getExchangeRate().subscribe((response: any) => {
+
+      console.log(response);
+
       if(response != null){
 
         const date = new Date();
@@ -39,6 +47,8 @@ export class RateComponent implements OnInit {
   }
 
   private extractData(table: string){
+
+    this.rates = [];
 
     let array: any = [];
     let data: any = [];
