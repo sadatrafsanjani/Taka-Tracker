@@ -3,7 +3,6 @@ import {catchError, Observable, of, retry, throwError} from "rxjs";
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {tap} from "rxjs/operators";
 import {CacheService} from "./cache.service";
-import {data} from "jquery";
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +11,6 @@ export class CurrencyService {
 
   private url = "https://www.bb.org.bd/en/index.php/econdata/exchangerate";
   constructor(private http: HttpClient, private cacheService: CacheService) { }
-
 
   getExchangeRate(): Observable<any> {
 
@@ -33,12 +31,16 @@ export class CurrencyService {
   }
 
   private handleError(error: HttpErrorResponse) {
+
+    let message = "";
+
     if (error.status === 0) {
-      console.error('An error occurred:', error.error);
-    } else {
-      console.error(
-        `Backend returned code ${error.status}, body was: `, error.error);
+      message = 'Network connection problem!'
     }
-    return throwError(() => new Error('Something bad happened; please try again later.'));
+    else {
+      message = 'Error code: ' + error.status + ' Message: ' + error.error;
+    }
+
+    return throwError(() => new Error(message));
   }
 }

@@ -18,6 +18,7 @@ import {TimeService} from "../../service/time.service";
 export class RateComponent implements OnInit {
 
   rates: any = [];
+  errorMessage!: string;
 
   constructor(private currencyService: CurrencyService,
               private timeService: TimeService) {
@@ -30,18 +31,17 @@ export class RateComponent implements OnInit {
 
   public getData(){
 
-    this.currencyService.getExchangeRate().subscribe((response: any) => {
-
-      console.log(response);
-
-      if(response != null){
-
+    this.currencyService.getExchangeRate().subscribe({
+      next: (response: any) => {
+        this.extractData(response.toString().replace(/\s+/g, '').trim());
+      },
+      error: (err) => {
+        this.errorMessage = err;
+      },
+      complete: () => {
         const date = new Date();
         const updatedAt = date.getHours() + ":" + date.getMinutes();
         this.timeService.setTime(updatedAt);
-
-        const data = response.toString().replace(/\s+/g, '').trim();
-        this.extractData(data);
       }
     });
   }
@@ -49,7 +49,6 @@ export class RateComponent implements OnInit {
   private extractData(table: string){
 
     this.rates = [];
-
     let array: any = [];
     let data: any = [];
 
@@ -87,5 +86,4 @@ export class RateComponent implements OnInit {
       }
     }
   }
-
 }
