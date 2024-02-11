@@ -11,9 +11,9 @@
 
 .info-btn {
   background: transparent url("../../../assets/info.png") no-repeat;
-  background-size: 24px;
-  width: 24px;
-  height: 24px;
+  background-size: 20px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
   border: none;
   border-radius: 70%;
