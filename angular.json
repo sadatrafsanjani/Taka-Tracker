@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "BD-Currency-Rate": {
+    "Taka-Tracker": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/bd-currency-rate",
+            "outputPath": "dist/taka-tracker",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -83,10 +83,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "BD-Currency-Rate:build:production"
+              "buildTarget": "Taka-Tracker:build:production"
             },
             "development": {
-              "buildTarget": "BD-Currency-Rate:build:development"
+              "buildTarget": "Taka-Tracker:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -94,7 +94,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "BD-Currency-Rate:build"
+            "buildTarget": "Taka-Tracker:build"
           }
         },
         "test": {

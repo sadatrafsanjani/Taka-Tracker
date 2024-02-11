@@ -8,10 +8,7 @@ import {TimeService} from "../../service/time.service";
 @Component({
   selector: 'app-rate',
   standalone: true,
-  imports: [
-    NgForOf,
-    HttpClientModule,
-    NgIf],
+  imports: [NgForOf, HttpClientModule, NgIf],
   templateUrl: './rate.component.html',
   styleUrl: './rate.component.css'
 })

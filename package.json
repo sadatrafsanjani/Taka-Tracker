@@ -1,5 +1,5 @@
 {
-  "name": "bd-currency-rate",
+  "name": "taka-tracker",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:BD-Currency-Rate": "node dist/bd-currency-rate/server/server.mjs"
+    "serve:ssr:Taka-Tracker": "node dist/taka-tracker/server/server.mjs"
   },
   "private": true,
   "dependencies": {

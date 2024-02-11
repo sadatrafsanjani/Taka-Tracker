@@ -1,7 +1,7 @@
 import {Component } from '@angular/core';
-import {NavComponent} from "../template/nav/nav.component";
-import {FooterComponent} from "../template/footer/footer.component";
-import {RateComponent} from "../template/rate/rate.component";
+import {NavComponent} from "../nav/nav.component";
+import {FooterComponent} from "../footer/footer.component";
+import {RateComponent} from "../rate/rate.component";
 
 @Component({
   selector: 'app-index',

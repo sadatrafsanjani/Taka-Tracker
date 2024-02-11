@@ -1,22 +1,8 @@
-<nav class="navbar">
-  <div class="container pt-2 ps-0 pe-0">
-
-    <div class="col-6">
-      <img src="./assets/logo.png" class="logo float-start" alt="Logo" width="22" height="22" />
-      <h6 class="h6 text-color-heading mt-1">BD Currency Rate</h6>
-    </div>
-    <div class="col-6">
-      <button type="button" class="btn btn-sm btn-secondary ms-2 info-btn float-end" data-bs-toggle="modal" data-bs-target="#about"></button>
-    </div>
-
-  </div>
-</nav>
-
-<div class="modal fade" id="about" tabindex="-1" aria-labelledby="about" aria-hidden="true">
+<div class="modal fade" id="info" tabindex="-1" aria-labelledby="info" aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <div class="modal-content bg-dark">
       <div class="modal-header">
-        <h2 class="modal-title fs-5 text-light">BD Currency Rate</h2>
+        <h2 class="modal-title fs-5 text-light">{{ title }}</h2>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
