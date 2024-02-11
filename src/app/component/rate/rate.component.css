@@ -1,5 +1,11 @@
-div#rate {
+#rate {
   height: 462px;
+}
+
+#inner {
+  padding: 10px 20px;
+  height: 430px;
+  border: 1px solid #aeaeae;
 }
 
 .bg-dark {

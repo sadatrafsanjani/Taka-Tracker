@@ -1,22 +1,36 @@
-<div class="row border-top border-warning">
-  <div id="rate" class="col-md-12 px-4 py-3">
+<div class="row border-top">
+  <div id="rate" class="col-md-12 px-3 py-3">
+
     <h6 *ngIf="errorMessage" class="text-danger">{{errorMessage}}</h6>
-    <table *ngIf="!errorMessage" class="table table-dark">
-      <thead>
-      <tr class="text-center">
-        <th scope="col" class="table-heading-text-color">Currency</th>
-        <th scope="col" class="table-heading-text-color">Buy</th>
-        <th scope="col" class="table-heading-text-color">Sell</th>
-      </tr>
-      </thead>
-      <tbody class="table-group-divider">
-      <tr *ngFor="let rate of rates; index as i" class="text-center">
-        <td class="currency-text-color">{{rate.currency}}</td>
-        <td class="rate-text-color">{{rate.buy}}</td>
-        <td class="rate-text-color">{{rate.sell}}</td>
-      </tr>
-      </tbody>
-    </table>
+
+    <div id="inner">
+
+      <table *ngIf="!errorMessage" class="table table-dark">
+        <thead>
+          <tr class="text-center">
+            <th scope="col" class="table-heading-text-color">Currency</th>
+            <th scope="col" class="table-heading-text-color">Buy</th>
+            <th scope="col" class="table-heading-text-color">Sell</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let rate of rates; index as i" class="text-center">
+
+            <div *ngIf="i < 9">
+              <td class="currency-text-color">{{rate.currency}}</td>
+              <td class="rate-text-color">{{rate.buy}}</td>
+              <td class="rate-text-color">{{rate.sell}}</td>
+            </div>
+            <div *ngIf="i == 9">
+              <td class="currency-text-color border-0">{{rate.currency}}</td>
+              <td class="rate-text-color border-0">{{rate.buy}}</td>
+              <td class="rate-text-color border-0">{{rate.sell}}</td>
+            </div>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
 
   </div>
 </div>
