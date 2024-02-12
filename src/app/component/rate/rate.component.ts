@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {NgForOf, NgIf} from "@angular/common";
+import {NgClass, NgForOf, NgIf} from "@angular/common";
 import {HttpClientModule} from "@angular/common/http";
 import {CurrencyService} from "../../service/currency.service";
 import {TimeService} from "../../service/time.service";
@@ -8,7 +8,7 @@ import {TimeService} from "../../service/time.service";
 @Component({
   selector: 'app-rate',
   standalone: true,
-  imports: [NgForOf, HttpClientModule, NgIf],
+  imports: [NgForOf, HttpClientModule, NgIf, NgClass],
   templateUrl: './rate.component.html',
   styleUrl: './rate.component.css'
 })

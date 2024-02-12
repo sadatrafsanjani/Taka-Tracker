@@ -3,11 +3,11 @@
 
     <h6 *ngIf="errorMessage" class="text-danger">{{errorMessage}}</h6>
 
-    <div id="inner">
+    <div id="inner" class="rounded">
 
       <table *ngIf="!errorMessage" class="table table-dark">
         <thead>
-          <tr class="text-center">
+          <tr class="text-center border-bottom">
             <th scope="col" class="table-heading-text-color">Currency</th>
             <th scope="col" class="table-heading-text-color">Buy</th>
             <th scope="col" class="table-heading-text-color">Sell</th>
@@ -15,17 +15,9 @@
         </thead>
         <tbody>
           <tr *ngFor="let rate of rates; index as i" class="text-center">
-
-            <div *ngIf="i < 9">
-              <td class="currency-text-color">{{rate.currency}}</td>
-              <td class="rate-text-color">{{rate.buy}}</td>
-              <td class="rate-text-color">{{rate.sell}}</td>
-            </div>
-            <div *ngIf="i == 9">
-              <td class="currency-text-color border-0">{{rate.currency}}</td>
-              <td class="rate-text-color border-0">{{rate.buy}}</td>
-              <td class="rate-text-color border-0">{{rate.sell}}</td>
-            </div>
+            <td class="currency-text-color" [ngClass]="i < 9 ? 'bottom-border' : 'border-0' ">{{rate.currency}}</td>
+            <td class="rate-text-color" [ngClass]="i < 9 ? 'bottom-border' : 'border-0' ">{{rate.buy}}</td>
+            <td class="rate-text-color" [ngClass]="i < 9 ? 'bottom-border' : 'border-0' ">{{rate.sell}}</td>
           </tr>
         </tbody>
       </table>

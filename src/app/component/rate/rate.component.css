@@ -1,11 +1,13 @@
+
+
 #rate {
-  height: 462px;
+  height: 468px;
 }
 
 #inner {
-  padding: 10px 20px;
-  height: 430px;
-  border: 1px solid #aeaeae;
+  padding: 16px;
+  height: 436px;
+  border: 1px solid #676765;
 }
 
 .bg-dark {
@@ -25,10 +27,15 @@
   color: #cacaca;
   font-size: 12px;
   font-family: Bahnschrift, sans-serif;
+  padding-bottom: 0;
 }
 
 .table-bg-dark {
   background-color: #1a1a1a;
+}
+
+.bottom-border {
+  border-bottom: 1px solid #676765;
 }
 
 .currency-text-color {
