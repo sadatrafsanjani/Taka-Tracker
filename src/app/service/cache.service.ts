@@ -1,16 +1,11 @@
 import { Injectable } from '@angular/core';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({providedIn: 'root'})
 export class CacheService {
 
-  private cache: Map<string, any> = new Map<string, [Date, any]>();
+  private cache = new Map<string, [Date, any]>();
 
-  constructor() {}
-
-  put(key: string, value: any) {
-
+  put(key: string, value: any): void {
     const expiresIn = new Date();
     expiresIn.setMinutes(expiresIn.getMinutes() + 5);
 
@@ -18,22 +13,24 @@ export class CacheService {
   }
 
   get(key: string): any {
-
-    return this.cache.get(key)[1];
+    return this.cache.get(key)?.[1];
   }
 
-  isExist(key: string): any {
-    return this.cache.get(key) !== undefined;
+  isExist(key: string): boolean {
+    return this.cache.has(key);
   }
 
-  isValid(key: string): any {
+  isValid(key: string): boolean {
+    const entry = this.cache.get(key);
 
-    const time = this.cache.get(key)[0] as Date;
+    if (!entry) {
+      return false;
+    }
 
-    return time.getTime() > new Date().getTime();
+    return entry[0].getTime() > Date.now();
   }
 
-  clear() {
+  clear(): void {
     this.cache.clear();
   }
 }

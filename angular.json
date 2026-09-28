@@ -19,6 +19,13 @@
             "polyfills": [
               "zone.js"
             ],
+            "allowedCommonJsDependencies": [
+              "boolbase",
+              "undici",
+              "whatwg-mimetype",
+              "iconv-lite",
+              "whatwg-encoding"
+            ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",

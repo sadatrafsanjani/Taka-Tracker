@@ -4,12 +4,10 @@ import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {tap} from "rxjs/operators";
 import {CacheService} from "./cache.service";
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({providedIn: 'root'})
 export class CurrencyService {
 
-  private url = "https://www.bb.org.bd/en/index.php/econdata/exchangerate";
+  private URL = "https://www.bb.org.bd/en/index.php/econdata/exchangerate";
   constructor(private http: HttpClient, private cacheService: CacheService) { }
 
   getExchangeRate(): Observable<any> {
@@ -19,7 +17,7 @@ export class CurrencyService {
       return of(this.cacheService.get("rate"));
     }
 
-    return this.http.get(this.url, {responseType: "text"}).pipe(tap((data: any) => {
+    return this.http.get(this.URL, {responseType: "text"}).pipe(tap((data: any) => {
 
       this.cacheService.clear();
       this.cacheService.put("rate", data);

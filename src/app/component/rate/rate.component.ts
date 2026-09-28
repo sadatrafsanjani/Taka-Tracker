@@ -4,6 +4,7 @@ import {HttpClientModule} from "@angular/common/http";
 import {CurrencyService} from "../../service/currency.service";
 import {TimeService} from "../../service/time.service";
 import {RateDTO} from "../dto/RateDTO";
+import * as cheerio from 'cheerio';
 
 
 @Component({
@@ -45,21 +46,28 @@ export class RateComponent implements OnInit {
 
   private extractData(html: string){
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    const tables = doc.querySelectorAll("table");
+    const $ = cheerio.load(html);
+    const tables = $('table');
+    const result: string[][] = [];
 
-    const result = Array.from(tables).flatMap(table => {
+    tables.each((_, table) => {
+      $(table).find('tr').each((_, row) => {
 
-      return Array.from(table.querySelectorAll("tr")).map(row =>
+        const cells: string[] = [];
 
-        Array.from(row.querySelectorAll("th, td")).map(cell =>
-          cell.textContent?.trim() ?? ""
-        )
-      );
-    }).filter(row => row.length > 0).filter((_, index) => index !== 0 && index !== 2);
+        $(row).find('th, td').each((_, cell) => {
+          cells.push($(cell).text().trim());
+        });
 
-    const json: RateDTO[] = result.map(row => ({
+        if (cells.some(cell => cell !== '')) {
+          result.push(cells);
+        }
+      });
+    });
+
+    const data = result.filter(row => row.length > 0).filter((_, index) => index !== 0 && index !== 2)
+
+    const json: RateDTO[] = data.map(row => ({
       currency: row[0],
       buy: row[1],
       sell: row[2]
