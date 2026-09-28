@@ -1,26 +1,33 @@
 <div class="row border-top">
   <div id="rate" class="col-md-12 px-3 py-3">
 
-    <h6 *ngIf="errorMessage" class="text-danger">{{errorMessage}}</h6>
+    @if (errorMessage) {
+      <h6 class="text-danger">{{ errorMessage }}</h6>
+    }
 
     <div id="inner" class="rounded">
 
-      <table *ngIf="!errorMessage" class="table table-dark">
-        <thead>
+      @if (!errorMessage) {
+        <table class="table table-dark">
+          <thead>
           <tr class="text-center border-bottom">
             <th scope="col" class="table-heading-text-color">Currency</th>
             <th scope="col" class="table-heading-text-color">Buy</th>
             <th scope="col" class="table-heading-text-color">Sell</th>
           </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let rate of rates; index as i" class="text-center">
-            <td class="currency-text-color" [ngClass]="i < 9 ? 'bottom-border' : 'border-0' ">{{rate.currency}}</td>
-            <td class="rate-text-color" [ngClass]="i < 9 ? 'bottom-border' : 'border-0' ">{{rate.buy}}</td>
-            <td class="rate-text-color" [ngClass]="i < 9 ? 'bottom-border' : 'border-0' ">{{rate.sell}}</td>
-          </tr>
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            @for (rate of rates; track $index) {
+              <tr class="text-center">
+                <td class="currency-text-color" [ngClass]="$index < 9 ? 'bottom-border' : 'border-0'">{{ rate.currency }}</td>
+                <td class="rate-text-color" [ngClass]="$index < 9 ? 'bottom-border' : 'border-0'">{{ rate.buy }}</td>
+                <td class="rate-text-color" [ngClass]="$index < 9 ? 'bottom-border' : 'border-0'">{{ rate.sell }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
 
     </div>
 

@@ -1,6 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {NgClass, NgForOf, NgIf} from "@angular/common";
-import {HttpClientModule} from "@angular/common/http";
+import {NgClass} from "@angular/common";
 import {CurrencyService} from "../../service/currency.service";
 import {TimeService} from "../../service/time.service";
 import {RateDTO} from "../dto/RateDTO";
@@ -10,7 +9,7 @@ import * as cheerio from 'cheerio';
 @Component({
   selector: 'app-rate',
   standalone: true,
-  imports: [NgForOf, HttpClientModule, NgIf, NgClass],
+  imports: [NgClass],
   templateUrl: './rate.component.html',
   styleUrl: './rate.component.css'
 })
@@ -23,7 +22,6 @@ export class RateComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
     this.getData();
   }
 
@@ -47,10 +45,9 @@ export class RateComponent implements OnInit {
   private extractData(html: string){
 
     const $ = cheerio.load(html);
-    const tables = $('table');
     const result: string[][] = [];
 
-    tables.each((_, table) => {
+    $('table').each((_, table) => {
       $(table).find('tr').each((_, row) => {
 
         const cells: string[] = [];
@@ -65,7 +62,9 @@ export class RateComponent implements OnInit {
       });
     });
 
-    const data = result.filter(row => row.length > 0).filter((_, index) => index !== 0 && index !== 2)
+    const data = result
+      .filter(row => row.length > 0)
+      .filter((_, index) => index !== 0 && index !== 2);
 
     const json: RateDTO[] = data.map(row => ({
       currency: row[0],
