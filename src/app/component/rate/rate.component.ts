@@ -3,6 +3,7 @@ import {NgClass, NgForOf, NgIf} from "@angular/common";
 import {HttpClientModule} from "@angular/common/http";
 import {CurrencyService} from "../../service/currency.service";
 import {TimeService} from "../../service/time.service";
+import {RateDTO} from "../dto/RateDTO";
 
 
 @Component({
@@ -14,11 +15,10 @@ import {TimeService} from "../../service/time.service";
 })
 export class RateComponent implements OnInit {
 
-  rates: any = [];
+  rates: RateDTO[] = [];
   errorMessage!: string;
 
-  constructor(private currencyService: CurrencyService,
-              private timeService: TimeService) {
+  constructor(private currencyService: CurrencyService, private timeService: TimeService) {
   }
 
   ngOnInit(): void {
@@ -30,7 +30,7 @@ export class RateComponent implements OnInit {
 
     this.currencyService.getExchangeRate().subscribe({
       next: (response: any) => {
-        this.extractData(response.toString().replace(/\s+/g, '').trim());
+        this.rates = this.extractData(response.toString().replace(/\s+/g, '').trim());
       },
       error: (err) => {
         this.errorMessage = err;
@@ -43,44 +43,28 @@ export class RateComponent implements OnInit {
     });
   }
 
-  private extractData(table: string){
+  private extractData(html: string){
 
-    this.rates = [];
-    let array: any = [];
-    let data: any = [];
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const tables = doc.querySelectorAll("table");
 
-    let m: number | RegExpExecArray | null;
-    const regex = /<td>(.*?)<\/td>/gm;
+    const result = Array.from(tables).flatMap(table => {
 
-    while ((m = regex.exec(table)) !== null) {
+      return Array.from(table.querySelectorAll("tr")).map(row =>
 
-      if (m.index === regex.lastIndex) {
-        regex.lastIndex++;
-      }
+        Array.from(row.querySelectorAll("th, td")).map(cell =>
+          cell.textContent?.trim() ?? ""
+        )
+      );
+    }).filter(row => row.length > 0).filter((_, index) => index !== 0 && index !== 2);
 
-      m.forEach((match, index) => {
+    const json: RateDTO[] = result.map(row => ({
+      currency: row[0],
+      buy: row[1],
+      sell: row[2]
+    }));
 
-        if(index%2){
-          array.push(match);
-        }
-      })
-    }
-
-    for(let i=1; i<=array.length; i++){
-
-      data.push(array[i-1]);
-
-      if(i%3 == 0){
-
-        const row = {
-          currency: data[0],
-          buy: data[1],
-          sell: data[2]
-        };
-
-        this.rates.push(row);
-        data = [];
-      }
-    }
+    return json;
   }
 }
