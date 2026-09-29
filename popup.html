@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'self';"/>
+    <title>Taka Tracker</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/popup.css"/>
+</head>
+<body class="small overflow-hidden" style="width:390px;height:540px;">
+
+<div class="d-flex flex-column w-100 h-100 overflow-hidden">
+
+    <!-- Header -->
+    <header class="flex-shrink-0 bg-white border-bottom px-3 py-3">
+        <div class="row g-0 align-items-center">
+            <div class="col">
+                <h6 class="mb-0 fw-semibold">Taka Tracker</h6>
+                <small class="d-block mt-1 text-body-secondary">Source: BD Central Bank</small>
+            </div>
+            <div class="col-auto">
+                <button id="refreshButton" type="button"
+                        class="btn btn-outline-primary border-0 rounded-3 p-0 d-inline-flex align-items-center justify-content-center fs-5"
+                        style="width:34px;height:34px;"
+                        title="Refresh rates" aria-label="Refresh rates">&#8635;
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main id="rate" class="flex-grow-1 overflow-y-auto p-2">
+
+        <div id="loading" class="d-flex align-items-center justify-content-center gap-2 text-body-secondary small"
+             style="min-height:210px;">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            <span>Loading rates...</span>
+        </div>
+
+        <div id="errorContainer" class="d-none">
+            <div class="alert alert-danger small rounded-3 mb-0" role="alert">
+                <div id="errorMessage"></div>
+                <button id="retryButton" type="button" class="btn btn-danger btn-sm mt-2">Retry</button>
+            </div>
+        </div>
+
+        <div id="rateContainer" class="d-none">
+            <div class="bg-white border rounded-3 shadow-sm overflow-hidden">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                    <tr class="text-center">
+                        <th scope="col" class="px-2 py-1 small text-uppercase fw-bold text-body-secondary">Currency</th>
+                        <th scope="col" class="px-2 py-1 small text-uppercase fw-bold text-body-secondary">Buy</th>
+                        <th scope="col" class="px-2 py-1 small text-uppercase fw-bold text-body-secondary">Sell</th>
+                    </tr>
+                    </thead>
+                    <tbody id="rateBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="flex-shrink-0 bg-white border-top px-3 py-2 small text-body-secondary">
+        <div class="row g-0 align-items-center">
+            <div class="col text-start">
+                <span id="updatedAt">Last Updated: --</span>
+            </div>
+            <div class="col text-end">
+                <span>Developed by <a href="https://aultrus.com" class="text-info text-decoration-none" target="_blank">Aultrus</a></span>
+            </div>
+        </div>
+    </footer>
+
+</div>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="js/popup.js"></script>
+</body>
+</html>

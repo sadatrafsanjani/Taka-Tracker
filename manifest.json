@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Taka Tracker",
+  "version": "2.0.0",
+  "description": "Live currency exchange rate tracker. Your one stop exchange rate updates!",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.bb.org.bd/*"
+  ],
+  "action": {
+    "default_title": "Taka Tracker",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "icons": {
+    "16": "icon/16.png",
+    "32": "icon/32.png",
+    "48": "icon/48.png",
+    "128": "icon/128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
