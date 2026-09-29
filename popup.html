@@ -13,11 +13,10 @@
 <div class="d-flex flex-column w-100 h-100 overflow-hidden">
 
     <!-- Header -->
-    <header class="flex-shrink-0 bg-white border-bottom px-3 py-3">
+    <header class="flex-shrink-0 bg-white border-bottom px-2 py-2">
         <div class="row g-0 align-items-center">
             <div class="col">
                 <h6 class="mb-0 fw-semibold">Taka Tracker</h6>
-                <small class="d-block mt-1 text-body-secondary">Source: BD Central Bank</small>
             </div>
             <div class="col-auto">
                 <button id="refreshButton" type="button"
@@ -58,6 +57,16 @@
                     <tbody id="rateBody"></tbody>
                 </table>
             </div>
+
+            <!-- 7-day chart -->
+            <div class="bg-white border rounded-3 shadow-sm overflow-hidden mt-2">
+                <div class="row g-0 align-items-center px-2 py-1 border-bottom">
+                    <div class="col small text-uppercase fw-bold text-body-secondary">Last 7 days (market rate)</div>
+                    <div id="chartTitle" class="col-auto small fw-bold text-primary"></div>
+                </div>
+                <div id="chartBody" class="small"></div>
+            </div>
+
         </div>
 
     </main>
