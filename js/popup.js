@@ -3,6 +3,7 @@
     "use strict";
 
     const HISTORY_DAYS = 7;
+    const HIDDEN_CURRENCIES = ["LKR", "SEK"];
 
     const $loading = $("#loading");
     const $errorContainer = $("#errorContainer");
@@ -140,6 +141,11 @@
                     rate.buy !== "" ||
                     rate.sell !== ""
                 );
+            })
+            .filter(function (rate) {
+                return !HIDDEN_CURRENCIES.some(function (code) {
+                    return new RegExp("\\b" + code + "\\b").test(rate.currency);
+                });
             });
     }
 
@@ -228,16 +234,6 @@
     function dateKey(date) {
 
         return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
-    }
-
-    function formatDay(key) {
-
-        const parts = key.split("-");
-
-        return new Date(+parts[0], +parts[1] - 1, +parts[2]).toLocaleDateString([], {
-            day: "numeric",
-            month: "short"
-        });
     }
 
     function fetchHistory(rates) {
@@ -370,45 +366,23 @@
             return;
         }
 
-        const values = data.values;
-        const lastIndex = values.length - 1;
+        $("<div>", {class: "p-2"})
+            .append(buildSparkline(data.values, 80))
+            .appendTo($chartBody);
 
-        const $readout = $("<div>", {
-            class: "d-flex justify-content-between align-items-baseline px-2 pt-2"
-        });
-        const $value = $("<span>", {class: "fw-bold fs-6"}).appendTo($readout);
-        const $date = $("<span>", {class: "text-body-secondary"}).appendTo($readout);
-
-        function showPoint(index) {
-
-            const i = index === null ? lastIndex : index;
-
-            $value.text(values[i].toFixed(2) + " BDT");
-            $date.text(formatDay(data.dates[i]) + (index === null ? " (latest)" : ""));
-        }
-
-        showPoint(null);
-
-        const measured = Math.floor($chartBody.width()) - 16;
-        const width = measured > 200 ? measured : 340;
-
-        const svg = buildChart(data, width, 130, showPoint);
-
-        $chartBody.append($readout);
-        $("<div>", {class: "px-2 pb-2"}).append(svg).appendTo($chartBody);
-        $chartBody.append(buildSummary(values));
+        $chartBody.append(buildSummary(data.values));
     }
 
     function buildStat(label, value, valueClass) {
 
-        const $col = $("<div>", {class: "col px-2 py-1"});
+        const $col = $("<div>", {class: "col text-nowrap"});
 
-        $("<div>", {
-            class: "small text-body-secondary",
-            text: label
+        $("<span>", {
+            class: "text-body-secondary",
+            text: label + " "
         }).appendTo($col);
 
-        $("<div>", {
+        $("<span>", {
             class: "fw-semibold " + (valueClass || ""),
             text: value
         }).appendTo($col);
@@ -427,211 +401,46 @@
         const changeClass = change > 0 ? "text-success" : change < 0 ? "text-danger" : "text-body-secondary";
         const changeText = (change > 0 ? "+" : "") + change.toFixed(2) + "%";
 
-        return $("<div>", {class: "row g-0 text-center border-top"})
+        return $("<div>", {class: "row g-0 text-center border-top small px-2 py-1"})
             .append(buildStat("Low", min.toFixed(2)))
             .append(buildStat("High", max.toFixed(2)))
             .append(buildStat("Change", changeText, changeClass));
     }
 
-    function svgEl(name, attrs) {
+    function buildSparkline(series, height) {
 
-        const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+        const ns = "http://www.w3.org/2000/svg";
+        const width = 100;
+        const padding = 4;
 
-        Object.keys(attrs || {}).forEach(function (key) {
-            el.setAttribute(key, attrs[key]);
+        const min = Math.min.apply(null, series);
+        const max = Math.max.apply(null, series);
+        const range = max - min || 1;
+
+        const points = series.map(function (value, i) {
+
+            const x = (i / (series.length - 1)) * width;
+            const y = height - padding - ((value - min) / range) * (height - padding * 2);
+
+            return x.toFixed(2) + "," + y.toFixed(2);
         });
 
-        return el;
-    }
+        const svg = document.createElementNS(ns, "svg");
+        svg.setAttribute("viewBox", "0 0 " + width + " " + height);
+        svg.setAttribute("preserveAspectRatio", "none");
+        svg.setAttribute("class", "w-100 text-primary");
+        svg.setAttribute("height", height);
 
-    function buildChart(data, width, height, onHover) {
+        const line = document.createElementNS(ns, "polyline");
+        line.setAttribute("points", points.join(" "));
+        line.setAttribute("fill", "none");
+        line.setAttribute("stroke", "currentColor");
+        line.setAttribute("stroke-width", "2");
+        line.setAttribute("stroke-linejoin", "round");
+        line.setAttribute("stroke-linecap", "round");
+        line.setAttribute("vector-effect", "non-scaling-stroke");
 
-        const values = data.values;
-        const n = values.length;
-
-        const margin = {top: 10, right: 18, bottom: 22, left: 46};
-        const plotW = width - margin.left - margin.right;
-        const plotH = height - margin.top - margin.bottom;
-        const baseY = margin.top + plotH;
-
-        const min = Math.min.apply(null, values);
-        const max = Math.max.apply(null, values);
-        const padding = (max - min) * 0.15 || max * 0.002 || 1;
-        const lo = min - padding;
-        const hi = max + padding;
-
-        function x(i) {
-            return margin.left + (i / (n - 1)) * plotW;
-        }
-
-        function y(value) {
-            return margin.top + ((hi - value) / (hi - lo)) * plotH;
-        }
-
-        const svg = svgEl("svg", {
-            width: width,
-            height: height,
-            viewBox: "0 0 " + width + " " + height,
-            class: "d-block text-primary"
-        });
-
-        // Horizontal grid + y-axis labels
-        const ticks = 4;
-
-        for (let t = 0; t < ticks; t++) {
-
-            const value = hi - (t * (hi - lo)) / (ticks - 1);
-            const gy = y(value);
-
-            svg.appendChild(svgEl("line", {
-                x1: margin.left,
-                y1: gy.toFixed(2),
-                x2: width - margin.right,
-                y2: gy.toFixed(2),
-                stroke: "currentColor",
-                "stroke-width": 1,
-                "stroke-dasharray": "3 3",
-                class: "text-body-tertiary"
-            }));
-
-            const label = svgEl("text", {
-                x: margin.left - 6,
-                y: (gy + 3).toFixed(2),
-                "text-anchor": "end",
-                "font-size": 10,
-                fill: "currentColor",
-                class: "text-body-secondary"
-            });
-            label.textContent = value.toFixed(2);
-            svg.appendChild(label);
-        }
-
-        // Baseline
-        svg.appendChild(svgEl("line", {
-            x1: margin.left,
-            y1: baseY,
-            x2: width - margin.right,
-            y2: baseY,
-            stroke: "currentColor",
-            "stroke-width": 1,
-            class: "text-body-tertiary"
-        }));
-
-        // X-axis date labels
-        data.dates.forEach(function (date, i) {
-
-            const label = svgEl("text", {
-                x: x(i).toFixed(2),
-                y: height - 6,
-                "text-anchor": "middle",
-                "font-size": 10,
-                fill: "currentColor",
-                class: "text-body-secondary"
-            });
-            label.textContent = formatDay(date);
-            svg.appendChild(label);
-        });
-
-        // Area fill
-        const linePoints = values.map(function (value, i) {
-            return x(i).toFixed(2) + "," + y(value).toFixed(2);
-        });
-
-        svg.appendChild(svgEl("polygon", {
-            points: linePoints.join(" ") + " " + x(n - 1).toFixed(2) + "," + baseY + " " + x(0).toFixed(2) + "," + baseY,
-            fill: "currentColor",
-            "fill-opacity": 0.1
-        }));
-
-        // Line
-        svg.appendChild(svgEl("polyline", {
-            points: linePoints.join(" "),
-            fill: "none",
-            stroke: "currentColor",
-            "stroke-width": 2,
-            "stroke-linejoin": "round",
-            "stroke-linecap": "round"
-        }));
-
-        // Data point markers
-        values.forEach(function (value, i) {
-
-            const isLast = i === n - 1;
-
-            svg.appendChild(svgEl("circle", {
-                cx: x(i).toFixed(2),
-                cy: y(value).toFixed(2),
-                r: isLast ? 3.5 : 2.5,
-                fill: isLast ? "currentColor" : "#ffffff",
-                stroke: "currentColor",
-                "stroke-width": 1.5
-            }));
-        });
-
-        // Hover guide + active marker
-        const guide = svgEl("line", {
-            x1: 0,
-            y1: margin.top,
-            x2: 0,
-            y2: baseY,
-            stroke: "currentColor",
-            "stroke-width": 1,
-            class: "text-body-secondary"
-        });
-        guide.style.display = "none";
-        svg.appendChild(guide);
-
-        const active = svgEl("circle", {
-            cx: 0,
-            cy: 0,
-            r: 4.5,
-            fill: "currentColor",
-            stroke: "#ffffff",
-            "stroke-width": 2
-        });
-        active.style.display = "none";
-        svg.appendChild(active);
-
-        // Hover capture area
-        const overlay = svgEl("rect", {
-            x: margin.left - 8,
-            y: margin.top,
-            width: plotW + 16,
-            height: plotH,
-            fill: "transparent"
-        });
-        overlay.style.cursor = "crosshair";
-        svg.appendChild(overlay);
-
-        overlay.addEventListener("mousemove", function (event) {
-
-            const rect = svg.getBoundingClientRect();
-            const scale = width / rect.width;
-            const mouseX = (event.clientX - rect.left) * scale;
-
-            let index = Math.round(((mouseX - margin.left) / plotW) * (n - 1));
-            index = Math.max(0, Math.min(n - 1, index));
-
-            const px = x(index).toFixed(2);
-
-            guide.setAttribute("x1", px);
-            guide.setAttribute("x2", px);
-            active.setAttribute("cx", px);
-            active.setAttribute("cy", y(values[index]).toFixed(2));
-
-            guide.style.display = "";
-            active.style.display = "";
-
-            onHover(index);
-        });
-
-        overlay.addEventListener("mouseleave", function () {
-
-            guide.style.display = "none";
-            active.style.display = "none";
-
-            onHover(null);
-        });
+        svg.appendChild(line);
 
         return svg;
     }
