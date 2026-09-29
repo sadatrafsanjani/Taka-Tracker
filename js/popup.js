@@ -1,3 +1,6 @@
+import { CONFIG } from "../config.js";
+
+
 (function () {
 
     "use strict";
@@ -256,7 +259,7 @@
         const from = new Date();
         from.setDate(from.getDate() - 10);
 
-        const url = "https://api.frankfurter.dev/v2/rates?from=" + dateKey(from) + "&quotes=" + quotes.join(",");
+        const url = CONFIG.historyUrl + "?from=" + dateKey(from) + "&quotes=" + quotes.join(",");
 
         return fetch(url)
             .then(function (response) {
