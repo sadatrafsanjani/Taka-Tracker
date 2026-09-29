@@ -1,0 +1,15 @@
+:root {
+    --bs-body-bg: #f4f7f7;
+    --bs-body-color: #243230;
+    --bs-secondary-color: #71807d;
+    --bs-border-color: #e2e9e7;
+
+    --bs-primary: #238f83;
+    --bs-primary-rgb: 35, 143, 131;
+
+    --bs-danger: #c75b5b;
+    --bs-danger-rgb: 199, 91, 91;
+    --bs-danger-bg-subtle: #fbeeee;
+    --bs-danger-border-subtle: #f2d5d5;
+    --bs-danger-text-emphasis: #c75b5b;
+}
