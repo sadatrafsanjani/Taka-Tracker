@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Taka Tracker",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Live currency exchange rate tracker. Your one stop exchange rate updates!",
   "permissions": [
     "storage"

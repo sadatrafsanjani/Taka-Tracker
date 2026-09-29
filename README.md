@@ -1,246 +1,101 @@
 # Taka Tracker
 
-Taka Tracker is a Chrome extension built with Angular for tracking and displaying currency exchange rates, with exchange-rate data sourced from Bangladesh Bank.
+A lightweight Chrome extension that shows today's Bangladeshi Taka (BDT) exchange rates in a compact popup, with a simple 7-day trend line for any currency you pick.
 
-The project uses Angular SSR to handle server-side retrieval of the Bangladesh Bank exchange-rate page. Since the source page does not provide browser CORS access, the exchange-rate HTML is retrieved server-side and parsed using Cheerio before being consumed by the Angular application.
+## Screenshot
+
+<p align="center"> <img src="screenshot/screenshot.png" alt="Taka Tracker popup showing the rates table and the 7-day USD trend line" width="390"> </p>
 
 ## Features
 
-- Chrome extension built with Angular
-- Bangladesh Bank exchange-rate integration
-- Exchange-rate HTML extraction
-- Server-side rendering with Angular SSR
-- Server-side HTML parsing with Cheerio
-- Five-minute in-memory exchange-rate caching
-- RxJS-based HTTP and error handling
-- Bootstrap and Bootstrap Icons integration
+- **Live rates table**: currency, buy and sell rates from the Bangladesh central bank source, shown in a compact popup.
+- **7-day trend line**: a simple line chart for one currency at a time. USD is selected by default, and clicking any row switches the chart.
+- **Manual refresh**: a refresh button that clears the cached rates and fetches them again.
+- **Loading and error states**: a spinner while loading, and a clear error message with a Retry button.
+- **Flexible height**: the popup grows with its content up to Chrome's 600px popup limit, and the table area scrolls beyond that.
+- **Bootstrap layout**: the interface uses Bootstrap utility classes, with a small `popup.css` that only sets theme variables.
 
-## Architecture
+## How it works
 
-```text
-                    ┌─────────────────────┐
-                    │   Angular Extension │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │  Currency Service   │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │    Cache Service    │
-                    │      5 minutes      │
-                    └──────────┬──────────┘
-                               │
-                         Cache miss
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │    Angular SSR      │
-                    │     / Node.js       │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │   Bangladesh Bank   │
-                    │   Exchange Rates    │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │      Cheerio        │
-                    │   HTML extraction   │
-                    └─────────────────────┘
+1. `popup.js` asks the background script for the rates page with a `GET_EXCHANGE_RATE` message.
+2. The background script fetches the page and caches it in `chrome.storage.local` under `exchangeRatesCache`.
+3. `popup.js` parses the HTML tables into buy and sell rows and renders them.
+4. For the trend line, it requests the last several days of reference rates from the [Frankfurter API](https://frankfurter.dev) (free, no API key) and converts each currency to BDT.
+
+## Data sources
+
+| Data | Source |
+|---|---|
+| Buy and sell rates in the table | Bangladesh central bank rates page, fetched by the background script |
+| 7-day trend line | Frankfurter API (`api.frankfurter.dev`) |
+
+The trend line plots market reference rates, not the bank's buy and sell rates, so its shape can differ slightly from the table. Some currencies have no data on weekends, so a line can contain fewer than 7 points.
+
+## Installation (developer mode)
+
+1. Clone or download this repository.
+2. Open `chrome://extensions` in Chrome.
+3. Turn on **Developer mode** (top right).
+4. Click **Load unpacked** and select the project folder.
+5. Pin **Taka Tracker** to the toolbar and click its icon.
+
+## Project structure
+
 ```
-
-## Why SSR?
-
-The Bangladesh Bank exchange-rate page does not expose the required CORS headers for direct browser requests.
-
-A direct Angular browser request therefore results in a CORS error.
-
-SSR moves the request to the Node.js server:
-
-```text
-Browser
-   │
-   │ Angular application
-   ▼
-SSR Server
-   │
-   │ HTTP request
-   ▼
-Bangladesh Bank
-```
-
-CORS is a browser security mechanism, so the server-side request can retrieve the HTML without requiring Bangladesh Bank to enable browser CORS access.
-
-## Caching
-
-Exchange-rate data is cached in memory for five minutes.
-
-The flow is:
-
-```text
-Request
-  │
-  ├── Cached and valid ──► Return cached data
-  │
-  └── Cache miss/expired
-             │
-             ▼
-       Fetch Bangladesh Bank
-             │
-             ▼
-        Update cache
-             │
-             ▼
-        Return new data
-```
-
-The cache is implemented by `CacheService`.
-
-```ts
-cacheService.put('rate', data);
-```
-
-A cached value remains valid for five minutes.
-
-The cache is process-local and is cleared when the SSR process restarts.
-
-## Technology Stack
-
-- Angular
-- TypeScript
-- Angular SSR
-- RxJS
-- Cheerio
-- Bootstrap
-- Bootstrap Icons
-- Node.js
-
-## Requirements
-
-- Node.js
-- npm
-- Angular CLI
-
-Check your installed versions:
-
-```bash
-node --version
-npm --version
-ng version
-```
-
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/sadatrafsanjani/Taka-Tracker.git
-```
-
-Enter the project directory:
-
-```bash
-cd Taka-Tracker
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-## Development
-
-Start the Angular development server:
-
-```bash
-npm start
-```
-
-The application will be available through the Angular development server.
-
-## Build
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-The generated files are placed in the `dist` directory.
-
-## SSR
-
-The project includes an Angular SSR entry point and a Node.js server.
-
-After building the project, the generated SSR application can be started using the project's SSR configuration.
-
-The SSR server is responsible for server-side operations that cannot be performed directly in the browser, including retrieving the Bangladesh Bank exchange-rate page.
-
-## Chrome Extension
-
-After creating the production build:
-
-1. Open Chrome.
-2. Navigate to:
-
-```text
-chrome://extensions/
-```
-
-3. Enable **Developer mode**.
-4. Select **Load unpacked**.
-5. Select the directory containing the generated extension files and `manifest.json`.
-
-## Project Structure
-
-```text
-Taka-Tracker/
-├── src/
-│   ├── app/
-│   │   ├── services/
-│   │   │   ├── cache.service.ts
-│   │   │   └── currency.service.ts
-│   │   └── ...
-│   ├── main.ts
-│   └── main.server.ts
-│
-├── server.ts
-├── angular.json
-├── package.json
-├── package-lock.json
-├── tsconfig.json
-├── tsconfig.app.json
+taka-tracker/
+├── manifest.json
+├── popup.html
+├── background.js            # fetches and caches the rates page
+├── css/
+│   ├── bootstrap.min.css
+│   └── popup.css            # Bootstrap theme variables only
+├── js/
+│   ├── jquery.min.js
+│   ├── bootstrap.bundle.min.js
+│   └── popup.js             # table, chart and UI logic
+├── LICENSE
 └── README.md
 ```
 
-## Exchange Rate Data
+## Permissions
 
-The exchange-rate source is the Bangladesh Bank exchange-rate page:
+| Permission | Why it is needed |
+|---|---|
+| `storage` | Caches the rates page in `chrome.storage.local` |
+| Host access to the rates source | Lets the background script fetch the rates page |
+| Host access to `https://api.frankfurter.dev/*` | Lets the popup fetch 7-day history for the trend line |
 
-```text
-https://www.bb.org.bd/en/index.php/econdata/exchangerate
+The extension does not collect, store or send any personal data.
+
+## Configuration
+
+Both settings are constants at the top of `js/popup.js`:
+
+```js
+const HISTORY_DAYS = 7;                    // number of plotted days
+const HIDDEN_CURRENCIES = ["LKR", "SEK"];  // currencies removed from the table and chart
 ```
 
-The application retrieves the HTML and extracts the relevant exchange-rate table data.
+To hide another currency, add its 3-letter code to `HIDDEN_CURRENCIES`.
 
-## Error Handling
+## Limitations
 
-The currency service uses RxJS operators including:
+- The trend line needs a 3-letter currency code (for example `USD`) in the Currency column. Rows without one show "No history available for this currency."
+- The table depends on the layout of the source page. If the source changes its HTML, the parsing in `extractRates` may need updating.
+- Chrome caps extension popups at 600px in height.
 
-- `retry()` for transient request failures
-- `catchError()` for request errors
-- `throwError()` for propagating application errors
+## Disclaimer
 
-Network failures are reported separately from HTTP errors.
+Rates are shown for information only and may be delayed or differ from the rates offered by banks and exchange houses. Do not use this extension as the sole basis for financial decisions.
+
+## Third-party libraries
+
+- [Bootstrap](https://getbootstrap.com) (MIT)
+- [jQuery](https://jquery.com) (MIT)
+- [Frankfurter](https://frankfurter.dev) API for historical rates
 
 ## License
 
-This project does not currently specify a license.
+Released under the [MIT License](LICENSE).
 
-If you intend to make the project open source, add an appropriate `LICENSE` file and update this section accordingly.
+Developed by [Sadat Rafsanjani](https://sadatrafsanjani.github.io).
