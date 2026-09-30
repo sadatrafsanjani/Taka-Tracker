@@ -13,3 +13,7 @@
     --bs-danger-border-subtle: #f2d5d5;
     --bs-danger-text-emphasis: #c75b5b;
 }
+
+.title-color {
+    color: #238f83;
+}

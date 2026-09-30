@@ -27,7 +27,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
         });
 
-    // Keeps the message channel open for the async response
     return true;
 });
 
@@ -63,7 +62,7 @@ async function readCache() {
         }
     }
     catch (error) {
-        // Ignore cache read errors and fall back to a normal fetch
+        console.log("Cache empty");
     }
 
     return null;
@@ -88,7 +87,7 @@ async function saveCache(html) {
         });
     }
     catch (error) {
-        // Caching is best-effort: never fail the request because of it
+        console.log("Caching failed!");
     }
 }
 

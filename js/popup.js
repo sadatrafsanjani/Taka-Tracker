@@ -178,10 +178,7 @@ import { CONFIG } from "../config.js";
 
         $.each(rates, function (index, rate) {
 
-            const borderClass =
-                index < rates.length - 1
-                    ? ""
-                    : "border-bottom-0";
+            const borderClass = index < rates.length - 1 ? "" : "border-bottom-0";
 
             const $row = $("<tr>", {
                 class: "text-center",
@@ -261,16 +258,15 @@ import { CONFIG } from "../config.js";
 
         const url = CONFIG.historyUrl + "?from=" + dateKey(from) + "&quotes=" + quotes.join(",");
 
-        return fetch(url)
-            .then(function (response) {
+        return fetch(url).then(function (response) {
 
                 if (!response.ok) {
                     throw new Error("HTTP " + response.status);
                 }
 
                 return response.json();
-            })
-            .then(function (rows) {
+
+            }).then(function (rows) {
 
                 const byDate = {};
 
@@ -316,8 +312,7 @@ import { CONFIG } from "../config.js";
 
         const requestId = ++historyRequestId;
 
-        fetchHistory(rates)
-            .then(function (seriesMap) {
+        fetchHistory(rates).then(function (seriesMap) {
 
                 if (requestId !== historyRequestId) {
                     return;
@@ -412,7 +407,7 @@ import { CONFIG } from "../config.js";
 
     function buildSparkline(series, height) {
 
-        const ns = "http://www.w3.org/2000/svg";
+        const ns = CONFIG.svgUrl;
         const width = 100;
         const padding = 4;
 
