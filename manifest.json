@@ -1,14 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Taka Tracker",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Live currency exchange rate tracker. Your one stop exchange rate updates!",
   "permissions": [
     "storage"
   ],
   "host_permissions": [
     "https://www.bb.org.bd/*",
-    "https://api.frankfurter.dev/*"
+    "https://api.frankfurter.dev/*",
+    "https://cdn.jsdelivr.net/*",
+    "https://*.currency-api.pages.dev/*"
   ],
   "action": {
     "default_title": "Taka Tracker",

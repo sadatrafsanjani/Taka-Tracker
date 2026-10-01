@@ -8,6 +8,10 @@ import { CONFIG } from "../config.js";
     const HISTORY_DAYS = 7;
     const HIDDEN_CURRENCIES = ["LKR", "SEK"];
 
+    const HISTORY_CACHE_KEY = "historyCache";
+    const HISTORY_CACHE_TTL = 6 * 60 * 60 * 1000;
+    const HISTORY_TIMEOUT = 8000;
+
     const $loading = $("#loading");
     const $errorContainer = $("#errorContainer");
     const $errorMessage = $("#errorMessage");
@@ -236,7 +240,7 @@ import { CONFIG } from "../config.js";
         return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
     }
 
-    function fetchHistory(rates) {
+    function extractCodes(rates) {
 
         const codes = {};
 
@@ -249,6 +253,66 @@ import { CONFIG } from "../config.js";
             }
         });
 
+        return codes;
+    }
+
+    function fetchJson(url) {
+
+        const controller = new AbortController();
+
+        const timer = setTimeout(function () {
+            controller.abort();
+        }, HISTORY_TIMEOUT);
+
+        return fetch(url, {signal: controller.signal})
+            .then(function (response) {
+
+                if (!response.ok) {
+                    throw new Error("HTTP " + response.status);
+                }
+
+                return response.json();
+            })
+            .finally(function () {
+                clearTimeout(timer);
+            });
+    }
+
+    function fetchJsonWithRetry(url) {
+
+        return fetchJson(url).catch(function () {
+            return fetchJson(url);
+        });
+    }
+
+    function readHistoryCache() {
+
+        return chrome.storage.local.get(HISTORY_CACHE_KEY)
+            .then(function (stored) {
+
+                const cache = stored[HISTORY_CACHE_KEY];
+
+                return cache && cache.data && typeof cache.timestamp === "number" ? cache : null;
+            })
+            .catch(function () {
+                return null;
+            });
+    }
+
+    function saveHistoryCache(data) {
+
+        return chrome.storage.local
+            .set({[HISTORY_CACHE_KEY]: {timestamp: Date.now(), data: data}})
+            .catch(function () {
+                // Caching is best-effort
+            });
+    }
+
+    // Primary source: Frankfurter
+    function fetchHistory(rates) {
+
+        const codes = extractCodes(rates);
+
         const quotes = Array.from(new Set(["BDT"].concat(Object.keys(codes).map(function (key) {
             return codes[key];
         }))));
@@ -258,61 +322,153 @@ import { CONFIG } from "../config.js";
 
         const url = CONFIG.historyUrl + "?from=" + dateKey(from) + "&quotes=" + quotes.join(",");
 
-        return fetch(url).then(function (response) {
+        return fetchJsonWithRetry(url).then(function (rows) {
 
-                if (!response.ok) {
-                    throw new Error("HTTP " + response.status);
+            const byDate = {};
+
+            rows.forEach(function (row) {
+
+                if (!byDate[row.date]) {
+                    byDate[row.date] = {};
                 }
 
-                return response.json();
-
-            }).then(function (rows) {
-
-                const byDate = {};
-
-                rows.forEach(function (row) {
-
-                    if (!byDate[row.date]) {
-                        byDate[row.date] = {};
-                    }
-
-                    byDate[row.date][row.quote] = row.rate;
-                });
-
-                const dates = Object.keys(byDate)
-                    .sort()
-                    .filter(function (date) {
-                        return byDate[date].BDT;
-                    })
-                    .slice(-HISTORY_DAYS);
-
-                const result = {};
-
-                Object.keys(codes).forEach(function (currency) {
-
-                    const code = codes[currency];
-
-                    const validDates = dates.filter(function (date) {
-                        return byDate[date][code];
-                    });
-
-                    result[currency] = {
-                        dates: validDates,
-                        values: validDates.map(function (date) {
-                            return byDate[date].BDT / byDate[date][code];
-                        })
-                    };
-                });
-
-                return result;
+                byDate[row.date][row.quote] = row.rate;
             });
+
+            const dates = Object.keys(byDate)
+                .sort()
+                .filter(function (date) {
+                    return byDate[date].BDT;
+                })
+                .slice(-HISTORY_DAYS);
+
+            const result = {};
+
+            Object.keys(codes).forEach(function (currency) {
+
+                const code = codes[currency];
+
+                const validDates = dates.filter(function (date) {
+                    return byDate[date][code];
+                });
+
+                result[currency] = {
+                    dates: validDates,
+                    values: validDates.map(function (date) {
+                        return byDate[date].BDT / byDate[date][code];
+                    })
+                };
+            });
+
+            return result;
+        });
     }
 
+    // Fallback source: fawazahmed0 currency-api (jsDelivr, then Cloudflare mirror)
+    function fetchFallbackDay(date) {
+
+        const urls = CONFIG.historyFallbackUrls;
+
+        function attempt(i) {
+
+            if (i >= urls.length) {
+                return Promise.resolve(null);
+            }
+
+            return fetchJson(urls[i].replace("{date}", date)).catch(function () {
+                return attempt(i + 1);
+            });
+        }
+
+        return attempt(0);
+    }
+
+    function fetchFallbackHistory(rates) {
+
+        const codes = extractCodes(rates);
+
+        const days = [];
+
+        for (let i = HISTORY_DAYS; i >= 1; i--) {
+
+            const day = new Date();
+            day.setDate(day.getDate() - i);
+            days.push(dateKey(day));
+        }
+
+        return Promise.all(days.map(fetchFallbackDay)).then(function (results) {
+
+            const valid = results.filter(function (r) {
+                return r && r.eur && r.eur.bdt;
+            });
+
+            if (valid.length < 2) {
+                throw new Error("Fallback history unavailable");
+            }
+
+            const result = {};
+
+            Object.keys(codes).forEach(function (currency) {
+
+                const code = codes[currency].toLowerCase();
+
+                const points = valid.filter(function (r) {
+                    return r.eur[code];
+                });
+
+                result[currency] = {
+                    dates: points.map(function (r) {
+                        return r.date;
+                    }),
+                    values: points.map(function (r) {
+                        return r.eur.bdt / r.eur[code];
+                    })
+                };
+            });
+
+            return result;
+        });
+    }
+
+    // Chain: Frankfurter -> fawazahmed0 -> saved history
     function loadHistory(rates) {
 
         const requestId = ++historyRequestId;
 
-        fetchHistory(rates).then(function (seriesMap) {
+        readHistoryCache()
+            .then(function (cache) {
+
+                const age = cache ? Date.now() - cache.timestamp : -1;
+
+                if (cache && age >= 0 && age < HISTORY_CACHE_TTL) {
+                    return cache.data;
+                }
+
+                return fetchHistory(rates)
+                    .catch(function (error) {
+
+                        console.error("Primary history failed:", error);
+
+                        return fetchFallbackHistory(rates);
+                    })
+                    .then(function (seriesMap) {
+
+                        saveHistoryCache(seriesMap);
+
+                        return seriesMap;
+                    })
+                    .catch(function (error) {
+
+                        console.error("History error:", error);
+
+                        if (cache) {
+                            return cache.data;
+                        }
+
+                        throw error;
+                    });
+            })
+            .then(function (seriesMap) {
 
                 if (requestId !== historyRequestId) {
                     return;
@@ -321,7 +477,9 @@ import { CONFIG } from "../config.js";
                 currentSeries = seriesMap;
                 renderChart();
             })
-            .catch(function () {
+            .catch(function (error) {
+
+                console.error("History error:", error);
 
                 if (requestId !== historyRequestId) {
                     return;

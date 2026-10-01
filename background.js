@@ -1,5 +1,6 @@
 import { CONFIG } from "./config.js";
-
+import { MESSAGES } from "./js/messages.js";
+import { RatesError } from "./js/errors.js";
 
 const CACHE_KEY = "exchangeRatesCache";
 const CACHE_DURATION = 5 * 60 * 1000;
@@ -9,19 +10,25 @@ const BB_URL = CONFIG.ratesUrl;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
+    if (sender.id !== chrome.runtime.id) {
+        return false;
+    }
+
     if (!message || message.type !== "GET_EXCHANGE_RATE") {
         return false;
     }
 
     getExchangeRate()
         .then((html) => {
-            sendResponse({
+            reply(sendResponse, {
                 success: true,
                 data: html
             });
         })
         .catch((error) => {
-            sendResponse({
+            console.error("GET_EXCHANGE_RATE failed:", error);
+
+            reply(sendResponse, {
                 success: false,
                 error: toFriendlyMessage(error)
             });
@@ -29,6 +36,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     return true;
 });
+
+function reply(sendResponse, payload) {
+
+    try {
+        sendResponse(payload);
+    }
+    catch (error) {
+        console.warn("Unable to send response:", error);
+    }
+}
 
 async function getExchangeRate() {
 
@@ -62,7 +79,7 @@ async function readCache() {
         }
     }
     catch (error) {
-        console.log("Cache empty");
+        console.warn("Unable to read rates cache:", error);
     }
 
     return null;
@@ -87,7 +104,7 @@ async function saveCache(html) {
         });
     }
     catch (error) {
-        console.log("Caching failed!");
+        console.warn("Unable to save rates cache:", error);
     }
 }
 
@@ -98,25 +115,40 @@ async function fetchRatesPage() {
 
     try {
 
-        const response = await fetch(BB_URL, {
-            method: "GET",
-            cache: "no-store",
-            credentials: "omit",
-            signal: controller.signal
-        });
+        let response;
 
-        if (!response.ok) {
-            throw new Error("Bangladesh Bank returned HTTP " + response.status);
+        try {
+
+            response = await fetch(BB_URL, {
+                method: "GET",
+                cache: "no-store",
+                credentials: "omit",
+                signal: controller.signal
+            });
+        }
+        catch (error) {
+            throw toNetworkError(error);
         }
 
-        const html = await response.text();
+        if (!response.ok) {
+            throw toHttpError(response.status);
+        }
+
+        let html;
+
+        try {
+            html = await response.text();
+        }
+        catch (error) {
+            throw toNetworkError(error);
+        }
 
         if (!html || html.trim().length === 0) {
-            throw new Error("Bangladesh Bank returned an empty response.");
+            throw new RatesError("emptyResponse");
         }
 
         if (!/<table/i.test(html)) {
-            throw new Error("Bangladesh Bank returned an unexpected page.");
+            throw new RatesError("unexpectedPage");
         }
 
         return html;
@@ -126,19 +158,33 @@ async function fetchRatesPage() {
     }
 }
 
-function toFriendlyMessage(error) {
+function toNetworkError(error) {
 
     if (error && error.name === "AbortError") {
-        return "The request timed out. Please try again.";
+        return new RatesError("timeout", {cause: error});
     }
 
-    if (error instanceof TypeError) {
-        return "Unable to reach Bangladesh Bank. Check your internet connection.";
+    return new RatesError("network", {cause: error});
+}
+
+function toHttpError(status) {
+
+    if (status === 429) {
+        return new RatesError("rateLimited");
     }
 
-    if (error instanceof Error && error.message) {
+    if (status >= 500) {
+        return new RatesError("serverError", {params: {status: status}});
+    }
+
+    return new RatesError("httpError", {params: {status: status}});
+}
+
+function toFriendlyMessage(error) {
+
+    if (error instanceof RatesError) {
         return error.message;
     }
 
-    return "Unable to retrieve exchange rates.";
+    return MESSAGES.unknown;
 }
